@@ -6,7 +6,7 @@ import "./helper/BaseClonesTest.sol";
 import "src/solswap-clones/factory.sol";
 import {Clones} from "@openzeppelin/proxy/Clones.sol";
 
-contract SolswapTest is BaseClonesTest {
+contract SolswapClonesTest is BaseClonesTest {
     function setUp() public override {
         super.setUp();
 
