@@ -56,3 +56,43 @@ Overall gas change: -60959 (-1.630%)
 ```
 Nice! 1% less, now lets save this as a snapshot
 
+then take a new snap;
+`forge snapshot --match-contract YulswapTest --snap yul1-base`
+
+
+## Optimization 2, lets rewrite `getInputPrice`
+
+[getInputPrice to yul](https://github.com/eugenioclrc/yulswap/commit/4e28b85e25d99230fd6309979b111d12bc7c7e10)
+
+```solidity
+function getInputPrice(uint256 input_amount, uint256 input_reserve, uint256 output_reserve)
+    internal
+    pure
+    returns (uint256 output_amount)
+{
+    assembly {
+        let input_amount_with_fee := mul(input_amount, 997)
+        let numerator := mul(input_amount_with_fee, output_reserve)
+        let denominator := add(mul(input_reserve, 1000), input_amount_with_fee)
+        output_amount := div(numerator, denominator)
+    }
+}
+```
+
+### Gas diff
+
+```
+forge snapshot --match-contract YulswapTest --diff yul1-base
+testSwapTokenToToken() (gas: -137 (-0.030%)) 
+testSwapMultipleTimes() (gas: -10960 (-0.166%)) 
+testSwapEthToken() (gas: -250 (-0.170%)) 
+testSwapTokenEth() (gas: -314 (-0.223%)) 
+testSwapTokenToTokenMultipleTimes() (gas: -21966 (-0.273%)) 
+Overall gas change: -33627 (-0.861%)
+```
+
+Ok not 1%, but it works.
+
+Lets take a new snap;
+`forge snapshot --match-contract YulswapTest --snap yul2-base`
+
