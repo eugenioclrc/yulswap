@@ -21,6 +21,9 @@ abstract contract BaseTest is Test {
     Token token2 = new Token("Stable ETH", "sETH");
 
     function setUp() public virtual {
+        // block.timestamp is never 0 :S, so we can avoid undeflow checks;
+        vm.warp(1);
+        
         Token(token).mint(200 ether);
         Token(token2).mint(200 ether);
 

@@ -113,3 +113,43 @@ A bit disappointed, but it works.
 
 New snapshot;
 `forge snapshot --match-contract YulswapTest --snap yul3-base`
+
+
+### Add extra checks to ensure token is a contract +refactor
+
+[`89555d1`](https://github.com/eugenioclrc/yulswap/commit/89555d1d839fcea9aafa65addac67fe272b20d58)
+
+```
+forge snapshot --match-contract YulswapTest --diff yul3-base
+
+testSwapTokenToTokenMultipleTimes() (gas: -16 (-0.000%)) 
+testSwapTokenToToken() (gas: -20 (-0.004%)) 
+testCreateExchange() (gas: 2480 (1.057%)) 
+Overall gas change: 2444 (1.052%)
+```
+
+Gas increased, but necessary checks...
+
+New snap
+`forge snapshot --match-contract YulswapTest --snap yul4-base`
+
+### Add more yul stuff and refactor removing unnesesary variable
+
+[`f2910c8`](https://github.com/eugenioclrc/yulswap/commit/f2910c89a7aafd0c490cd6636777d1f5efce15f9)
+
+```
+forge snapshot --match-contract YulswapTest --diff yul4-base
+testAddLiquidity() (gas: 1 (0.001%)) 
+testSwapTokenEth() (gas: 1 (0.001%)) 
+testRemoveLiquidity() (gas: 1 (0.001%)) 
+testCreateExchange() (gas: -19 (-0.008%)) 
+testSwapTokenToToken() (gas: -104 (-0.023%)) 
+testSwapMultipleTimes() (gas: -5359 (-0.081%)) 
+testSwapEthToken() (gas: -147 (-0.100%)) 
+testSwapTokenToTokenMultipleTimes() (gas: -13987 (-0.174%)) 
+Overall gas change: -19613 (-0.384%)
+```
+
+New snap
+`forge snapshot --match-contract YulswapTest --snap yul5-base`
+
