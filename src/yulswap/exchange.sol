@@ -94,12 +94,14 @@ contract YulExchange is ERC20 {
                 revert ErrZero();
             }
 
-            uint256 eth_reserve = address(this).balance - msg.value;
+            uint256 eth_reserve;
 
             uint256 token_reserve = tokenBalanceOf(address(this));
-            unchecked {
-                token_amount = msg.value * token_reserve / eth_reserve + 1;
-                liquidity_minted = msg.value * total_liquidity / eth_reserve;
+            assembly {
+                // current ether (include msg.value) - msg.value = balance before tx
+                eth_reserve := sub(selfbalance(), callvalue())
+                token_amount := add(div(mul(callvalue(), token_reserve), eth_reserve), 1)
+                liquidity_minted := div(mul(callvalue(), total_liquidity), eth_reserve)
             }
             if (max_tokens < token_amount) {
                 revert ErrMaxTokens(max_tokens);
@@ -141,9 +143,9 @@ contract YulExchange is ERC20 {
             revert ErrZero();
         }
         uint256 token_reserve = tokenBalanceOf(address(this));
-        unchecked {
-            eth_amount = amount * address(this).balance / total_liquidity;
-            token_amount = amount * token_reserve / total_liquidity;
+        assembly {
+            eth_amount := div(mul(amount, selfbalance()), total_liquidity)
+            token_amount := div(mul(amount, token_reserve), total_liquidity)
         }
         if (eth_amount < min_eth) {
             revert ErrBurnEthAmount(eth_amount);
