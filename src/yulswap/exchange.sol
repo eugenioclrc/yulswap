@@ -96,7 +96,7 @@ contract YulExchange is ERC20 {
 
             uint256 eth_reserve = address(this).balance - msg.value;
 
-            uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+            uint256 token_reserve = tokenBalanceOf(address(this));
             unchecked {
                 token_amount = msg.value * token_reserve / eth_reserve + 1;
                 liquidity_minted = msg.value * total_liquidity / eth_reserve;
@@ -140,7 +140,7 @@ contract YulExchange is ERC20 {
         if (total_liquidity == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        uint256 token_reserve = tokenBalanceOf(address(this));
         unchecked {
             eth_amount = amount * address(this).balance / total_liquidity;
             token_amount = amount * token_reserve / total_liquidity;
@@ -178,7 +178,7 @@ contract YulExchange is ERC20 {
             revert ErrZero();
         }
 
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        uint256 token_reserve = tokenBalanceOf(address(this));
         tokens_bought = getInputPrice(msg.value, address(this).balance - msg.value, token_reserve);
         if (tokens_bought < min_tokens) {
             revert ErrTokensOutpur(min_tokens);
@@ -211,7 +211,7 @@ contract YulExchange is ERC20 {
             revert ErrZero();
         }
 
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        uint256 token_reserve = tokenBalanceOf(address(this));
 
         eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
         if (eth_bought < min_eth) {
@@ -254,7 +254,7 @@ contract YulExchange is ERC20 {
         
         require(exchange_addr != address(this) && exchange_addr != address(0));
 
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        uint256 token_reserve = tokenBalanceOf(address(this));
         uint256 eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
         require(eth_bought >= min_eth_bought, "eth less than expextec");
 
@@ -270,7 +270,7 @@ contract YulExchange is ERC20 {
         if (eth_sold == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        uint256 token_reserve = tokenBalanceOf(address(this));
 
         if (token_reserve == 0) {
             revert ErrZero();
@@ -282,7 +282,7 @@ contract YulExchange is ERC20 {
         if (tokens_sold == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        uint256 token_reserve = tokenBalanceOf(address(this));
         return getInputPrice(tokens_sold, token_reserve, address(this).balance);
     }
 
@@ -299,6 +299,27 @@ contract YulExchange is ERC20 {
         }
     }
 
+
+    // gas golfing internal function
     
+    /// @dev Returns the amount of ERC20 `token` owned by `account`.
+    /// Returns zero if the `token` does not exist.
+    function tokenBalanceOf(address account) internal view returns (uint256 amount) {
+        address _token = tokenAddress;
+        /// @solidity memory-safe-assembly
+        assembly {
+            mstore(0x00, 0x70a08231) // Store the function selector of `balanceOf(address)`.
+            mstore(0x20, account) // Store the `account` argument.
+            amount :=
+                mul(
+                    mload(0x20),
+                    and( // The arguments of `and` are evaluated from right to left.
+                        gt(returndatasize(), 0x1f), // At least 32 bytes returned.
+                        staticcall(gas(), _token, 0x1c, 0x24, 0x20, 0x20)
+                    )
+                )
+        }
+    }
+
 
 }
