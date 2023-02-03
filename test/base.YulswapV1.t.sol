@@ -11,11 +11,11 @@ import "src/yulswap/factory.sol";
 
 import "src/mocks/Token.sol";
 
-import "./helper/BaseTest.sol";
+import "./helper/BaseClonesTest.sol";
 import {Clones} from "@openzeppelin/proxy/Clones.sol";
 
 
-contract YulswapTest is BaseTest {
+contract YulswapTest is BaseClonesTest {
     YulDeployer yulDeployer = new YulDeployer();
 
     

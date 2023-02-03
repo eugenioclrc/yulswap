@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.17;
 
-import "./helper/BaseTest.sol";
+import "./helper/BaseClonesTest.sol";
 
 import "src/solswap-clones/factory.sol";
 import {Clones} from "@openzeppelin/proxy/Clones.sol";
 
-contract SolswapTest is BaseTest {
+contract SolswapTest is BaseClonesTest {
     function setUp() public override {
         super.setUp();
 
