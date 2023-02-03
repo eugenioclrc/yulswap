@@ -153,3 +153,24 @@ Overall gas change: -19613 (-0.384%)
 New snap
 `forge snapshot --match-contract YulswapTest --snap yul5-base`
 
+### Refactor cache `tokenAddress` to avoid multiple `SLOAD`
+  
+[`87ff058`](https://github.com/eugenioclrc/yulswap/commit/87ff058000ad6486f25818996b153e567a07a8cb)
+
+```
+forge snapshot --match-contract YulswapTest --diff yul5-base
+testAddLiquidity() (gas: 8 (0.005%)) 
+testSwapTokenToToken() (gas: -213 (-0.047%)) 
+testRemoveLiquidity() (gas: -86 (-0.084%)) 
+testSwapEthToken() (gas: -129 (-0.088%)) 
+testSwapTokenEth() (gas: -129 (-0.092%)) 
+testSwapMultipleTimes() (gas: -18554 (-0.281%)) 
+testSwapTokenToTokenMultipleTimes() (gas: -36720 (-0.458%)) 
+Overall gas change: -55823 (-1.045%)
+```
+
+Good! it could be better if `addressToken` is an `immutable` but since its a proxy implementation its not possible, so caching its a must.
+
+New snap
+`forge snapshot --match-contract YulswapTest --snap yul6-base`
+
