@@ -96,3 +96,22 @@ Ok not 1%, but it works.
 Lets take a new snap;
 `forge snapshot --match-contract YulswapTest --snap yul2-base`
 
+### Math to yul
+
+[Math operations in yul](https://github.com/eugenioclrc/yulswap/commit/70f7411fbb1aa0f76ae25f61745687165ea0eb31)
+
+```
+forge snapshot --match-contract YulswapTest --diff yul2-base
+
+### Gas diff
+
+```
+Running 9 tests for test/base.YulswapV1.t.sol:YulswapTest
+testRemoveLiquidity() (gas: -27 (-0.027%)) 
+Overall gas change: -27 (-0.027%)
+```
+
+A bit disappointed, but it works.
+
+New snapshot;
+`forge snapshot --match-contract YulswapTest --snap yul3-base`
