@@ -35,46 +35,53 @@ For optimize it i will use foundry and a base template, so i will run the same t
 
 | Codebase    | Gas spend   |  Diff vs UniV1 |
 | ----------- | ----------- |  -------       |
-| UniV1       |  228017     |  0%|
-| Solswap     | 2305187     |  +910% (bad)  |
-| Solswap-clones| 204426     |  **-10%** (good)|
+| UniV1       |  228017     |  |
+| Solswap     | 2305187     |    |
+| Solswap-clones| 204426     |  |
+| Yulswap     |   206887    |                  |
 
 
 ### Add liquidity
 
-| Codebase    | Gas spend   |  Diff vs UniV1 |
-| ----------- | ----------- |  -------       |
-| UniV1       |  99733     |  |
-| Solswap     | 95695     |   |
-| Solswap-clones| 100465     | |
+| Codebase      | Gas spend   |  Diff vs UniV1 |
+| -----------   | ----------- |  -------       |
+| UniV1         |  99733     |                |
+| Solswap       | 95695      |                |
+| Solswap-clones| 100465      |                |
+| Yulswap       |   100474    |                |
 
 
 ### Remove liquidity
 
-| Codebase    | Gas spend   |  Diff vs UniV1 |
-| ----------- | ----------- |  -------       |
-| UniV1       |  18624     |   |
-| Solswap     | 19813     |    |
+
+| Codebase      | Gas spend   |  Diff vs UniV1 |
+| -----------   | ----------- |  -------       |
+| UniV1         |  18624     |   |
+| Solswap       | 19813     |    |
 | Solswap-clones| 20098     |  |
+| Yulswap       |   19824    |                |
+
+
 
 ### Swap token to ETH
+
 
 | Codebase    | Gas spend   |  Diff vs UniV1 |
 | ----------- | ----------- |  -------       |
 | UniV1       |  17532     |         |
 | Solswap     |  17855     |         |
 | Solswap-clones| 18173     |        |
+| Yulswap       |   17854    |                |
 
 
 ### Swap ETH to token
 
-
-| Codebase    | Gas spend   |  Diff vs UniV1 |
-| ----------- | ----------- |  -------       |
-| UniV1       |  16871     |         |
-| Solswap     |  17266     |         |
-| Solswap-clones| 17536     |        |
-
+| Codebase      | Gas spend   |  Diff vs UniV1 |
+| -----------   | ----------- |  -------       |
+| UniV1         |  16871     |         |
+| Solswap       |  17266     |         |
+| Solswap-clones|  17536     |        |
+| Yulswap       |   17171    |                |
 
 ### Swap token to token
 
@@ -83,18 +90,20 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1       |  28759     |         |
 | Solswap     |  26482     |         |
 | Solswap-clones| 27016     |        |
+| Yulswap       |   26315    |                |
 
 
 ### TLDR;
 
 Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove liquidity and 30 swaps (per each type of swap);
 
-| Codebase    | Total Gas spend   |  detal gas Diff vs UniV1 |
-| ----------- | ----------- |  -------       |
-| UniV1       |  1451422     |      0   |
-| Solswap     |  3498757     |     2047335    |
-| Solswap-clones| 1434491     |    **−16931**    |
-| Yulswap    | 1421777     |    **−29645**    |
+| Codebase      | Total Gas spend   |  detal gas Diff vs UniV1 |
+| -----------   | ----------- |  -------       |
+| UniV1         |     1451422 |  ---           |
+| Solswap       |     3498757 |   +2047335     |
+| Solswap-clones|     1434491 |   -  16931     |
+| Yulswap       |     1421777 | **-  29645**   |
+
 
 - UniV1:            1451422 gas units
 - Solswap:          3498757 gas units
