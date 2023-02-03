@@ -28,8 +28,32 @@ interface IExchange is IERC20, IERC20Metadata {
         payable
         returns (uint256 tokens_bought);
 
+    function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline, address recipient)
+        external
+        payable
+        returns (uint256 tokens_bought);
+
     // Trade ERC20 to ETH
     function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline)
         external
         returns (uint256 eth_bought);
+
+    function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline, address recipient)
+        external
+        returns (uint256 eth_bought);
+
+    /// @dev User specifies exact input and minimum output.
+    /// @param tokens_sold Amount of Tokens sold.
+    /// @param min_tokens_bought Minimum Tokens (token_addr) purchased.
+    /// @param min_eth_bought Minimum ETH purchased as intermediary.
+    /// @param deadline Time after which this transaction can no longer be executed.
+    /// @param token_addr The address of the token being purchased.
+    function tokenToTokenSwapInput(
+        uint256 tokens_sold,
+        uint256 min_tokens_bought,
+        uint256 min_eth_bought,
+        uint256 deadline,
+        address token_addr
+    ) external returns (uint256 tokens_bought);
+    
 }
