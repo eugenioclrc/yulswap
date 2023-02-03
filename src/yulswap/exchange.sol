@@ -18,7 +18,17 @@ contract YulExchange is ERC20 {
     // to track implementation
     address private immutable self;
 
-    uint8 private _initialized = 1;
+    uint256 private locked = 1;
+    modifier nonReentrant() virtual {
+        require(locked == 1, "REENTRANCY");
+
+        locked = 2;
+
+        _;
+
+        locked = 1;
+    }
+
 
     // events
     // drop the indexed keyword on eth_sold and tokens_bought to save gas
@@ -37,17 +47,6 @@ contract YulExchange is ERC20 {
     error ErrTokensOutpur(uint256 min_tokens);
     error ErrEthOutput(uint256 min_eth);
 
-    uint256 private locked = 1;
-
-    modifier nonReentrant() virtual {
-        require(locked == 1, "REENTRANCY");
-
-        locked = 2;
-
-        _;
-
-        locked = 1;
-    }
 
     receive() payable external {}
 
@@ -58,12 +57,13 @@ contract YulExchange is ERC20 {
     }
 
     function initialize(address token) external {
-        require(_initialized == 0, "contract has been initialized");
-        require(self != address(this), "factory initializer disabled");
-        _initialized = 1;
+        require(msg.sender == factoryAddress, "only factory can initialize");
+        // add check to ensure new tokens are contracts
+        require(token.code.length > 0, "token not a contract");
         tokenAddress = token;
         name = "Uniswap V1";
         symbol = "UNI-V1";
+        // unlock the reentrancy lock
         locked = 1;
     }
 
