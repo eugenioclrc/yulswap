@@ -90,6 +90,9 @@ contract YulExchange is ERC20 {
         uint256 total_liquidity = totalSupply;
 
         uint256 token_amount;
+
+        address _tokenAddress = tokenAddress;
+
         if (total_liquidity > 0) {
             if (min_liquidity == 0) {
                 revert ErrZero();
@@ -97,7 +100,7 @@ contract YulExchange is ERC20 {
 
             uint256 eth_reserve;
 
-            uint256 token_reserve = tokenBalanceOf(address(this));
+            uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
             assembly {
                 // current ether (include msg.value) - msg.value = balance before tx
                 eth_reserve := sub(selfbalance(), callvalue())
@@ -116,7 +119,7 @@ contract YulExchange is ERC20 {
         }
 
         _mint(msg.sender, liquidity_minted);
-        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), token_amount);
+        SafeTransferLib.safeTransferFrom(_tokenAddress, msg.sender, address(this), token_amount);
 
         emit AddLiquidity(msg.sender, msg.value, token_amount);
     }
@@ -143,7 +146,8 @@ contract YulExchange is ERC20 {
         if (total_liquidity == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = tokenBalanceOf(address(this));
+        address _tokenAddress = tokenAddress;
+        uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         assembly {
             eth_amount := div(mul(amount, selfbalance()), total_liquidity)
             token_amount := div(mul(amount, token_reserve), total_liquidity)
@@ -155,7 +159,7 @@ contract YulExchange is ERC20 {
             revert ErrBurnTokenAmount(token_amount);
         }
         _burn(msg.sender, amount);
-        SafeTransferLib.safeTransfer(tokenAddress, msg.sender, token_amount);
+        SafeTransferLib.safeTransfer(_tokenAddress, msg.sender, token_amount);
         SafeTransferLib.safeTransferETH(msg.sender, eth_amount);
         emit RemoveLiquidity(msg.sender, eth_amount, token_amount);
     }
@@ -181,7 +185,8 @@ contract YulExchange is ERC20 {
             revert ErrZero();
         }
 
-        uint256 token_reserve = tokenBalanceOf(address(this));
+        address _tokenAddress = tokenAddress;
+        uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         uint256 prevEthBalance;
         assembly {
             prevEthBalance := sub(selfbalance(), callvalue())
@@ -191,7 +196,7 @@ contract YulExchange is ERC20 {
             revert ErrTokensOutpur(min_tokens);
         }
 
-        SafeTransferLib.safeTransfer(tokenAddress, recipient, tokens_bought);
+        SafeTransferLib.safeTransfer(_tokenAddress, recipient, tokens_bought);
 
         emit TokenPurchase(msg.sender, recipient, msg.value, tokens_bought);
     }
@@ -218,7 +223,8 @@ contract YulExchange is ERC20 {
             revert ErrZero();
         }
 
-        uint256 token_reserve = tokenBalanceOf(address(this));
+        address _tokenAddress = tokenAddress;
+        uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         /*
         bad idea
         uint256 _balance;
@@ -231,7 +237,7 @@ contract YulExchange is ERC20 {
         if (eth_bought < min_eth) {
             revert ErrEthOutput(min_eth);
         }
-        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), tokens_sold);
+        SafeTransferLib.safeTransferFrom(_tokenAddress, msg.sender, address(this), tokens_sold);
         SafeTransferLib.safeTransferETH(recipient, eth_bought);
 
         emit EthPurchase(msg.sender, recipient, tokens_sold, eth_bought);
@@ -274,12 +280,12 @@ contract YulExchange is ERC20 {
                 revert(0x00, 0x20)
             }
         }
-
-        uint256 token_reserve = tokenBalanceOf(address(this));
+        address _tokenAddress = tokenAddress;
+        uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         uint256 eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
         require(eth_bought >= min_eth_bought, "eth less than expected");
 
-        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), tokens_sold);
+        SafeTransferLib.safeTransferFrom(_tokenAddress, msg.sender, address(this), tokens_sold);
 
         tokens_bought = IExchange(exchange_addr).ethToTokenSwapInput{value: eth_bought}(min_tokens_bought, deadline, msg.sender);
     
@@ -291,7 +297,7 @@ contract YulExchange is ERC20 {
         if (eth_sold == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = tokenBalanceOf(address(this));
+        uint256 token_reserve = tokenBalanceOf(tokenAddress, address(this));
 
         if (token_reserve == 0) {
             revert ErrZero();
@@ -303,7 +309,7 @@ contract YulExchange is ERC20 {
         if (tokens_sold == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = tokenBalanceOf(address(this));
+        uint256 token_reserve = tokenBalanceOf(tokenAddress, address(this));
         return getInputPrice(tokens_sold, token_reserve, address(this).balance);
     }
 
@@ -325,8 +331,7 @@ contract YulExchange is ERC20 {
     
     /// @dev Returns the amount of ERC20 `token` owned by `account`.
     /// Returns zero if the `token` does not exist.
-    function tokenBalanceOf(address account) internal view returns (uint256 amount) {
-        address _token = tokenAddress;
+    function tokenBalanceOf(address _token, address account) internal view returns (uint256 amount) {
         /// @solidity memory-safe-assembly
         assembly {
             mstore(0x00, 0x70a08231) // Store the function selector of `balanceOf(address)`.
