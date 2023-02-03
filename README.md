@@ -87,7 +87,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 
 ### TLDR;
 
-Lets make a gas budget, lets imagene 1 create pair, 5 add liquidity, 5 remove liquidity and 30 swaps (per each type of swap);
+Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove liquidity and 30 swaps (per each type of swap);
 
 | Codebase    | Total Gas spend   |  detal gas Diff vs UniV1 |
 | ----------- | ----------- |  -------       |
