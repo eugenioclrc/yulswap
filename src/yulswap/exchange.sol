@@ -289,13 +289,13 @@ contract YulExchange is ERC20 {
     function getInputPrice(uint256 input_amount, uint256 input_reserve, uint256 output_reserve)
         internal
         pure
-        returns (uint256)
+        returns (uint256 output_amount)
     {
-        unchecked {
-            uint256 input_amount_with_fee = input_amount * 997;
-            uint256 numerator = input_amount_with_fee * output_reserve;
-            uint256 denominator = (input_reserve * 1000) + input_amount_with_fee;
-            return numerator / denominator;
+        assembly {
+            let input_amount_with_fee := mul(input_amount, 997)
+            let numerator := mul(input_amount_with_fee, output_reserve)
+            let denominator := add(mul(input_reserve, 1000), input_amount_with_fee)
+            output_amount := div(numerator, denominator)
         }
     }
 
