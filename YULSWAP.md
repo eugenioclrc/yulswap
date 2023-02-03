@@ -174,3 +174,26 @@ Good! it could be better if `addressToken` is an `immutable` but since its a pro
 New snap
 `forge snapshot --match-contract YulswapTest --snap yul6-base`
 
+### Clones with immutables via solady
+
+[`0355252`](https://github.com/eugenioclrc/yulswap/commit/0355252141f36610cbef39c70e330c29cb7073f9)
+
+```
+forge snapshot --match-contract YulswapTest --diff yul6-base
+
+testSwapMultipleTimes() (gas: -11778 (-0.179%)) 
+testSwapTokenToTokenMultipleTimes() (gas: -17191 (-0.215%)) 
+testExchangeMetadata() (gas: 118 (0.654%)) 
+testAddLiquidity() (gas: -1895 (-1.244%)) 
+testSwapEthToken() (gas: -2179 (-1.488%)) 
+testSwapTokenEth() (gas: -2265 (-1.612%)) 
+testRemoveLiquidity() (gas: -1705 (-1.676%)) 
+testSwapTokenToToken() (gas: -9108 (-1.999%)) 
+testCreateExchange() (gas: -7012 (-2.957%)) 
+Overall gas change: -53015 (-10.715%)
+```
+
+**-10.71%** ultra sweet!!!
+
+New snap
+`forge snapshot --match-contract YulswapTest --snap yul7-base`
