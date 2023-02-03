@@ -21,7 +21,7 @@ For me, the important trick is to imagine a simple AMM MVP with these basic oper
 
 
 
-## Optimizations
+## Overall
 
 For optimize it i will use foundry and a base template, so i will run the same test on all the versions.
 
