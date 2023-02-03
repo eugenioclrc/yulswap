@@ -266,7 +266,7 @@ contract YulExchange is ERC20 {
         
         address payable exchange_addr = YulFactory(factoryAddress).getExchange(token_addr);
         
-        require(exchange_addr != address(this));
+        require(exchange_addr != address(this), "!same token");
 
         assembly {
             if iszero(exchange_addr) {
