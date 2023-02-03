@@ -15,9 +15,6 @@ contract YulExchange is ERC20 {
     // Address of Solswap Factory
     address public immutable factoryAddress;
 
-    // to track implementation
-    address private immutable self;
-
     uint256 private locked = 1;
     modifier nonReentrant() virtual {
         require(locked == 1, "REENTRANCY");
@@ -52,19 +49,23 @@ contract YulExchange is ERC20 {
 
     constructor() ERC20("Clone Iplementation", "IMPL-V1", 18) {
         factoryAddress = msg.sender;
-        self = address(this);
         locked = 2;
     }
 
     function initialize(address token) external {
         require(msg.sender == factoryAddress, "only factory can initialize");
-        // add check to ensure new tokens are contracts
-        require(token.code.length > 0, "token not a contract");
-        tokenAddress = token;
+        
+        assembly {
+            // tokenAddress = token;
+            sstore(tokenAddress.slot, token)
+            // unlock the reentrancy lock
+            // locked = 1;
+            sstore(locked.slot, 1)
+
+        }
         name = "Uniswap V1";
         symbol = "UNI-V1";
-        // unlock the reentrancy lock
-        locked = 1;
+
     }
 
     // Provide Liquidity
@@ -181,7 +182,11 @@ contract YulExchange is ERC20 {
         }
 
         uint256 token_reserve = tokenBalanceOf(address(this));
-        tokens_bought = getInputPrice(msg.value, address(this).balance - msg.value, token_reserve);
+        uint256 prevEthBalance;
+        assembly {
+            prevEthBalance := sub(selfbalance(), callvalue())
+        }
+        tokens_bought = getInputPrice(msg.value, prevEthBalance, token_reserve);
         if (tokens_bought < min_tokens) {
             revert ErrTokensOutpur(min_tokens);
         }
@@ -214,7 +219,14 @@ contract YulExchange is ERC20 {
         }
 
         uint256 token_reserve = tokenBalanceOf(address(this));
-
+        /*
+        bad idea
+        uint256 _balance;
+        assembly {
+            _balance := selfbalance()
+        }
+        eth_bought = getInputPrice(tokens_sold, token_reserve, _balance);
+        */
         eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
         if (eth_bought < min_eth) {
             revert ErrEthOutput(min_eth);
@@ -238,8 +250,7 @@ contract YulExchange is ERC20 {
         uint256 deadline,
         address token_addr
     ) external nonReentrant returns (uint256 tokens_bought) {
-        address payable exchange_addr = YulFactory(factoryAddress).getExchange(token_addr);
-        if (deadline <= block.timestamp) {
+        if (deadline < block.timestamp) {
             revert ErrDeadlineExpired(deadline);
         }
 
@@ -253,12 +264,20 @@ contract YulExchange is ERC20 {
             revert ErrZero();
         }
         
+        address payable exchange_addr = YulFactory(factoryAddress).getExchange(token_addr);
         
-        require(exchange_addr != address(this) && exchange_addr != address(0));
+        require(exchange_addr != address(this));
+
+        assembly {
+            if iszero(exchange_addr) {
+                mstore(0x00, "zero address")
+                revert(0x00, 0x20)
+            }
+        }
 
         uint256 token_reserve = tokenBalanceOf(address(this));
         uint256 eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
-        require(eth_bought >= min_eth_bought, "eth less than expextec");
+        require(eth_bought >= min_eth_bought, "eth less than expected");
 
         SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), tokens_sold);
 

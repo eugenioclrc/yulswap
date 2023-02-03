@@ -21,6 +21,9 @@ contract YulFactory {
     function createExchange(address token) external returns (address payable exchange) {
         exchange = payable(_tokenToExchange[token]);
         if (exchange == address(0)) {
+            // add check to ensure new tokens are contracts
+            require(token.code.length > 0, "token not a contract");
+        
             exchange = payable(Clones.clone(address(_exchangeImplementation)));
             YulExchange(exchange).initialize(token);
 
