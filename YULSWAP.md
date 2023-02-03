@@ -103,10 +103,8 @@ Lets take a new snap;
 
 ### Gas diff
 
-`forge snapshot --match-contract YulswapTest --diff yul2-base`
-
 ```
-Running 9 tests for test/base.YulswapV1.t.sol:YulswapTest
+forge snapshot --match-contract YulswapTest --diff yul2-base
 testRemoveLiquidity() (gas: -27 (-0.027%)) 
 Overall gas change: -27 (-0.027%)
 ```
