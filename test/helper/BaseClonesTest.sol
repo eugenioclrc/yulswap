@@ -18,7 +18,7 @@ abstract contract BaseClonesTest is BaseTest {
         assertEq(_f.getExchange(address(token2)), address(0));
 
         address _foo = _f.createExchange(address(token2));
-        (bool success, ) = _foo.call(abi.encodeWithSignature("initialize(address)", address(token)));
+        (bool success, ) = _foo.call(abi.encodeWithSignature("initialize()"));
         assertEq(success, false);
         
         assertEq(IExchange(_foo).tokenAddress(), address(token2));

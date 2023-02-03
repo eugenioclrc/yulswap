@@ -2,9 +2,13 @@
 pragma solidity ^0.8.0;
 
 import {YulExchange} from "./exchange.sol";
-import {Clones} from "@openzeppelin/proxy/Clones.sol";
+import {LibClone} from "solady/utils/LibClone.sol";
+
 
 contract YulFactory {
+    // from https://github.com/Saw-mon-and-Natalie/clones-with-immutable-args/blob/main/src/ExampleCloneFactory.sol
+    using LibClone for address;
+
     uint256 public tokenCount;
     mapping(address => address payable) private _tokenToExchange;
     mapping(address => address) private _exchangeToToken;
@@ -24,8 +28,8 @@ contract YulFactory {
             // add check to ensure new tokens are contracts
             require(token.code.length > 0, "token not a contract");
         
-            exchange = payable(Clones.clone(address(_exchangeImplementation)));
-            YulExchange(exchange).initialize(token);
+            exchange = payable(_exchangeImplementation.clone(abi.encodePacked(address(token))));
+            YulExchange(exchange).initialize();
 
             unchecked {
                 // overflow is virtually impossible, inline increment and assignation for gas saving

@@ -4,18 +4,25 @@ pragma solidity ^0.8.0;
 import {ERC20} from "solmate/tokens/ERC20.sol";
 
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
+import {Clone} from "solady/utils/Clone.sol";
 
 import {IExchange} from "src/interfaces/ExpectedInterfaceExchange.sol";
 
 import {YulFactory} from "./factory.sol";
 
-contract YulExchange is ERC20 {
+contract YulExchange is ERC20, Clone {
     // Address of ERC20 token sold on this exchange
-    address public tokenAddress;
+    // from https://github.com/Saw-mon-and-Natalie/clones-with-immutable-args/blob/main/src/ExampleCloneFactory.sol
+    // address public tokenAddress;
+    // Use clone with immutable hack from solady
+    
+
     // Address of Solswap Factory
     address public immutable factoryAddress;
 
-    uint256 private locked = 1;
+    // by default, start locked
+    uint256 private locked = 2;
+
     modifier nonReentrant() virtual {
         require(locked == 1, "REENTRANCY");
 
@@ -49,23 +56,16 @@ contract YulExchange is ERC20 {
 
     constructor() ERC20("Clone Iplementation", "IMPL-V1", 18) {
         factoryAddress = msg.sender;
-        locked = 2;
     }
 
-    function initialize(address token) external {
+    function initialize() external {
         require(msg.sender == factoryAddress, "only factory can initialize");
         
-        assembly {
-            // tokenAddress = token;
-            sstore(tokenAddress.slot, token)
-            // unlock the reentrancy lock
-            // locked = 1;
-            sstore(locked.slot, 1)
-
-        }
+        // unlock the reentrancy lock
+        locked = 1;
+        
         name = "Uniswap V1";
         symbol = "UNI-V1";
-
     }
 
     // Provide Liquidity
@@ -91,7 +91,7 @@ contract YulExchange is ERC20 {
 
         uint256 token_amount;
 
-        address _tokenAddress = tokenAddress;
+        address _tokenAddress = _getArgAddress(0);
 
         if (total_liquidity > 0) {
             if (min_liquidity == 0) {
@@ -146,7 +146,7 @@ contract YulExchange is ERC20 {
         if (total_liquidity == 0) {
             revert ErrZero();
         }
-        address _tokenAddress = tokenAddress;
+        address _tokenAddress = _getArgAddress(0);
         uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         assembly {
             eth_amount := div(mul(amount, selfbalance()), total_liquidity)
@@ -185,7 +185,7 @@ contract YulExchange is ERC20 {
             revert ErrZero();
         }
 
-        address _tokenAddress = tokenAddress;
+        address _tokenAddress = _getArgAddress(0);
         uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         uint256 prevEthBalance;
         assembly {
@@ -223,7 +223,7 @@ contract YulExchange is ERC20 {
             revert ErrZero();
         }
 
-        address _tokenAddress = tokenAddress;
+        address _tokenAddress = _getArgAddress(0);
         uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         /*
         bad idea
@@ -280,7 +280,7 @@ contract YulExchange is ERC20 {
                 revert(0x00, 0x20)
             }
         }
-        address _tokenAddress = tokenAddress;
+        address _tokenAddress = _getArgAddress(0);
         uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         uint256 eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
         require(eth_bought >= min_eth_bought, "eth less than expected");
@@ -292,12 +292,16 @@ contract YulExchange is ERC20 {
         emit EthPurchase(msg.sender, msg.sender, tokens_sold, eth_bought);
     }
 
+    function tokenAddress() external pure returns (address) {
+        return _getArgAddress(0);
+    }
+
     // Get Prices
     function getEthToTokenInputPrice(uint256 eth_sold) external view returns (uint256 tokens_bought) {
         if (eth_sold == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = tokenBalanceOf(tokenAddress, address(this));
+        uint256 token_reserve = tokenBalanceOf(_getArgAddress(0), address(this));
 
         if (token_reserve == 0) {
             revert ErrZero();
@@ -309,7 +313,7 @@ contract YulExchange is ERC20 {
         if (tokens_sold == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = tokenBalanceOf(tokenAddress, address(this));
+        uint256 token_reserve = tokenBalanceOf(_getArgAddress(0), address(this));
         return getInputPrice(tokens_sold, token_reserve, address(this).balance);
     }
 
