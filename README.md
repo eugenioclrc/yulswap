@@ -38,7 +38,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1       |  228017     |  |
 | Solswap     | 2305187     |    |
 | Solswap-clones| 204426     |  |
-| Yulswap     |   206887    |                  |
+| Yulswap     |   199909    |                  |
 
 
 ### Add liquidity
@@ -48,7 +48,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1         |  99733     |                |
 | Solswap       | 95695      |                |
 | Solswap-clones| 100465      |                |
-| Yulswap       |   100474    |                |
+| Yulswap       |   98429     |                |
 
 
 ### Remove liquidity
@@ -59,7 +59,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1         |  18624     |   |
 | Solswap       | 19813     |    |
 | Solswap-clones| 20098     |  |
-| Yulswap       |   19824    |                |
+| Yulswap       |   19782    |                |
 
 
 
@@ -102,13 +102,13 @@ Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove li
 | UniV1         |     1451422 |  ---           |
 | Solswap       |     3498757 |   +2047335     |
 | Solswap-clones|     1434491 |   -  16931     |
-| Yulswap       |     1421777 | **-  29645**   |
+| Yulswap       |     1404364 | **-  47058**   |
 
 
 - UniV1:            1451422 gas units
 - Solswap:          3498757 gas units
 - Solswap-clones:   1434491 gas units
-- [Yulswap](https://github.com/eugenioclrc/yulswap/commit/87ff058000ad6486f25818996b153e567a07a8cb):          1421777 gas units (last update commit `87ff058000`) [optimization writeup](/YULSWAP.md)
+- [Yulswap](https://github.com/eugenioclrc/yulswap/commit/b098e97940a0cdad3c6b578cbbe973bb05174c13):          1404364 gas units (last update commit `b098e97940`) [optimization writeup](/YULSWAP.md)
 
 
 So far not impressive but what an average gas budget based on a posible escenario we got some gas savings vs the original version.
