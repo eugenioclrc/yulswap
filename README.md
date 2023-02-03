@@ -99,7 +99,7 @@ Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove li
 - UniV1:            1451422 gas units
 - Solswap:          3498757 gas units
 - Solswap-clones:   1434491 gas units
-- [Yulswap](https://github.com/eugenioclrc/yulswap/tree/6b4bf520aeb45dfdba125a3f82f629730a90a009):          1426001 gas units (last update commit `6b4bf520ae`)
+- [Yulswap](https://github.com/eugenioclrc/yulswap/tree/6b4bf520aeb45dfdba125a3f82f629730a90a009):          1426001 gas units (last update commit `6b4bf520ae`) [optimization writeup](/YULSWAP.md)
 
 So far not impressive but what an average gas budget based on a posible escenario we got some gas savings vs the original version.
 ## Roadmap

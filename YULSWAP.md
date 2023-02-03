@@ -100,10 +100,10 @@ Lets take a new snap;
 
 [Math operations in yul](https://github.com/eugenioclrc/yulswap/commit/70f7411fbb1aa0f76ae25f61745687165ea0eb31)
 
-```
-forge snapshot --match-contract YulswapTest --diff yul2-base
 
 ### Gas diff
+
+`forge snapshot --match-contract YulswapTest --diff yul2-base`
 
 ```
 Running 9 tests for test/base.YulswapV1.t.sol:YulswapTest
