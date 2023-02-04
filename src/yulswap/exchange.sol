@@ -15,7 +15,6 @@ contract YulExchange is ERC20, Clone {
     // from https://github.com/Saw-mon-and-Natalie/clones-with-immutable-args/blob/main/src/ExampleCloneFactory.sol
     // address public tokenAddress;
     // Use clone with immutable hack from solady
-    
 
     // Address of Solswap Factory
     address public immutable factoryAddress;
@@ -32,7 +31,6 @@ contract YulExchange is ERC20, Clone {
 
         locked = 1;
     }
-
 
     // events
     // drop the indexed keyword on eth_sold and tokens_bought to save gas
@@ -51,8 +49,7 @@ contract YulExchange is ERC20, Clone {
     error ErrTokensOutpur(uint256 min_tokens);
     error ErrEthOutput(uint256 min_eth);
 
-
-    receive() payable external {}
+    receive() external payable {}
 
     constructor() ERC20("Clone Iplementation", "IMPL-V1", 18) {
         factoryAddress = msg.sender;
@@ -60,12 +57,12 @@ contract YulExchange is ERC20, Clone {
 
     function initialize() external {
         require(msg.sender == factoryAddress, "only factory can initialize");
-        
+
         // unlock the reentrancy lock
         locked = 1;
-        
-        name = "Uniswap V1";
-        symbol = "UNI-V1";
+
+        name = "Yulswap V1";
+        symbol = "YUL-V1";
     }
 
     // Provide Liquidity
@@ -165,7 +162,11 @@ contract YulExchange is ERC20, Clone {
     }
 
     // Trade ETH to ERC20
-    function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline) external payable returns (uint256 tokens_bought) {
+    function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline)
+        external
+        payable
+        returns (uint256 tokens_bought)
+    {
         return ethToTokenSwapInput(min_tokens, deadline, msg.sender);
     }
 
@@ -203,7 +204,10 @@ contract YulExchange is ERC20, Clone {
 
     // Trade ERC20 to ETH
 
-    function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline) external returns (uint256 tokens_bought) {
+    function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline)
+        external
+        returns (uint256 tokens_bought)
+    {
         return tokenToEthSwapInput(tokens_sold, min_eth, deadline, msg.sender);
     }
 
@@ -269,9 +273,9 @@ contract YulExchange is ERC20, Clone {
         if (min_eth_bought == 0) {
             revert ErrZero();
         }
-        
+
         address payable exchange_addr = YulFactory(factoryAddress).getExchange(token_addr);
-        
+
         require(exchange_addr != address(this), "!same token");
 
         assembly {
@@ -287,8 +291,9 @@ contract YulExchange is ERC20, Clone {
 
         SafeTransferLib.safeTransferFrom(_tokenAddress, msg.sender, address(this), tokens_sold);
 
-        tokens_bought = IExchange(exchange_addr).ethToTokenSwapInput{value: eth_bought}(min_tokens_bought, deadline, msg.sender);
-    
+        tokens_bought =
+            IExchange(exchange_addr).ethToTokenSwapInput{value: eth_bought}(min_tokens_bought, deadline, msg.sender);
+
         emit EthPurchase(msg.sender, msg.sender, tokens_sold, eth_bought);
     }
 
@@ -330,9 +335,8 @@ contract YulExchange is ERC20, Clone {
         }
     }
 
-
     // gas golfing internal function
-    
+
     /// @dev Returns the amount of ERC20 `token` owned by `account`.
     /// Returns zero if the `token` does not exist.
     function tokenBalanceOf(address _token, address account) internal view returns (uint256 amount) {
@@ -350,6 +354,4 @@ contract YulExchange is ERC20, Clone {
                 )
         }
     }
-
-
 }

@@ -7,7 +7,7 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 
 import {IExchange} from "src/interfaces/ExpectedInterfaceExchange.sol";
 
-import {SolFactory} from "./factory.sol";
+import {SolFactoryClones} from "./factory.sol";
 
 contract SolExchange is ERC20 {
     // Address of ERC20 token sold on this exchange
@@ -49,7 +49,7 @@ contract SolExchange is ERC20 {
         locked = 1;
     }
 
-    receive() payable external {}
+    receive() external payable {}
 
     constructor() ERC20("Clone Iplementation", "IMPL-V1", 18) {
         factoryAddress = msg.sender;
@@ -158,7 +158,11 @@ contract SolExchange is ERC20 {
     }
 
     // Trade ETH to ERC20
-    function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline) external payable returns (uint256 tokens_bought) {
+    function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline)
+        external
+        payable
+        returns (uint256 tokens_bought)
+    {
         return ethToTokenSwapInput(min_tokens, deadline, msg.sender);
     }
 
@@ -191,7 +195,10 @@ contract SolExchange is ERC20 {
 
     // Trade ERC20 to ETH
 
-    function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline) external returns (uint256 tokens_bought) {
+    function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline)
+        external
+        returns (uint256 tokens_bought)
+    {
         return tokenToEthSwapInput(tokens_sold, min_eth, deadline, msg.sender);
     }
 
@@ -236,7 +243,7 @@ contract SolExchange is ERC20 {
         uint256 deadline,
         address token_addr
     ) external nonReentrant returns (uint256 tokens_bought) {
-        address payable exchange_addr = SolFactory(factoryAddress).getExchange(token_addr);
+        address payable exchange_addr = SolFactoryClones(factoryAddress).getExchange(token_addr);
         if (deadline <= block.timestamp) {
             revert ErrDeadlineExpired(deadline);
         }
@@ -250,8 +257,7 @@ contract SolExchange is ERC20 {
         if (min_eth_bought == 0) {
             revert ErrZero();
         }
-        
-        
+
         require(exchange_addr != address(this) && exchange_addr != address(0));
 
         uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
@@ -260,8 +266,9 @@ contract SolExchange is ERC20 {
 
         SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), tokens_sold);
 
-        tokens_bought = IExchange(exchange_addr).ethToTokenSwapInput{value: eth_bought}(min_tokens_bought, deadline, msg.sender);
-    
+        tokens_bought =
+            IExchange(exchange_addr).ethToTokenSwapInput{value: eth_bought}(min_tokens_bought, deadline, msg.sender);
+
         emit EthPurchase(msg.sender, msg.sender, tokens_sold, eth_bought);
     }
 
@@ -298,5 +305,4 @@ contract SolExchange is ERC20 {
             return numerator / denominator;
         }
     }
-
 }

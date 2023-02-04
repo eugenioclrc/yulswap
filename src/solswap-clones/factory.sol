@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {SolExchange} from "./exchange.sol";
 import {Clones} from "@openzeppelin/proxy/Clones.sol";
 
-contract SolFactory {
+contract SolFactoryClones {
     uint256 public tokenCount;
     mapping(address => address payable) private _tokenToExchange;
     mapping(address => address) private _exchangeToToken;

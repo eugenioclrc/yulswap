@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import {YulExchange} from "./exchange.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 
-
 contract YulFactory {
     // from https://github.com/Saw-mon-and-Natalie/clones-with-immutable-args/blob/main/src/ExampleCloneFactory.sol
     using LibClone for address;
@@ -27,7 +26,7 @@ contract YulFactory {
         if (exchange == address(0)) {
             // add check to ensure new tokens are contracts
             require(token.code.length > 0, "token not a contract");
-        
+
             exchange = payable(_exchangeImplementation.clone(abi.encodePacked(address(token))));
             YulExchange(exchange).initialize();
 

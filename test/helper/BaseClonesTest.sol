@@ -11,16 +11,15 @@ import {BaseTest} from "./BaseTest.sol";
 import "src/mocks/Token.sol";
 
 abstract contract BaseClonesTest is BaseTest {
-    
     /// @dev basic tests for the factory and exchange
     function testProxyHack() public {
         assertEq(_f.tokenCount(), 1);
         assertEq(_f.getExchange(address(token2)), address(0));
 
         address _foo = _f.createExchange(address(token2));
-        (bool success, ) = _foo.call(abi.encodeWithSignature("initialize()"));
+        (bool success,) = _foo.call(abi.encodeWithSignature("initialize()"));
         assertEq(success, false);
-        
+
         assertEq(IExchange(_foo).tokenAddress(), address(token2));
     }
 }

@@ -23,7 +23,7 @@ abstract contract BaseTest is Test {
     function setUp() public virtual {
         // block.timestamp is never 0 :S, so we can avoid undeflow checks;
         vm.warp(1);
-        
+
         Token(token).mint(200 ether);
         Token(token2).mint(200 ether);
 
@@ -74,7 +74,7 @@ abstract contract BaseTest is Test {
         uint256 _gasleft = gasleft();
         _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
         console.log("gasUsage", _gasleft - gasleft());
-        
+
         assertEq(_exchange.totalSupply(), 100 ether);
     }
 
@@ -91,7 +91,7 @@ abstract contract BaseTest is Test {
         uint256 _gasleft = gasleft();
         _exchange.removeLiquidity(addedLiquidity, 1, 1, block.timestamp + 1);
         console.log("gasUsage", _gasleft - gasleft());
-        
+
         // this test its only for uni v1...
         // should have received 100 ether and 100 tokens
         assertEq(address(this).balance, etherPrev + 100 ether);
@@ -211,16 +211,14 @@ abstract contract BaseTest is Test {
         token2.approve(address(_exchange2), type(uint256).max);
         _exchange2.addLiquidity{value: 80 ether}(0, 80 ether, block.timestamp + 1);
 
-
         uint256 _gasleft = gasleft();
         _exchange.tokenToTokenSwapInput(1 ether, 1, 1, block.timestamp + 1, address(token2));
         console.log("gasUsage", _gasleft - gasleft());
     }
 
-     function testSwapTokenToTokenMultipleTimes() public {
+    function testSwapTokenToTokenMultipleTimes() public {
         IExchange _exchange = IExchange(exchange_address);
         IExchange _exchange2 = IExchange(_f.createExchange(address(token2)));
-        
 
         _exchange.addLiquidity{value: 100 ether}(0, 100 ether, block.timestamp + 1);
         token2.approve(address(_exchange2), type(uint256).max);
@@ -247,7 +245,6 @@ abstract contract BaseTest is Test {
         assertEq(tokensBought, 300146760304738626);
         assertGt(address(_exchange).balance, 100 ether);
         assertGt(address(_exchange2).balance, 80 ether);
-        
 
         vm.stopPrank();
     }

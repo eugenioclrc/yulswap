@@ -55,5 +55,4 @@ interface IExchange is IERC20, IERC20Metadata {
         uint256 deadline,
         address token_addr
     ) external returns (uint256 tokens_bought);
-    
 }

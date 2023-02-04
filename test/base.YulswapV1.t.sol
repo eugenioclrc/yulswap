@@ -14,17 +14,15 @@ import "src/mocks/Token.sol";
 import "./helper/BaseClonesTest.sol";
 import {Clones} from "@openzeppelin/proxy/Clones.sol";
 
-
 contract YulswapTest is BaseClonesTest {
     YulDeployer yulDeployer = new YulDeployer();
 
-    
     function setUp() public override {
         super.setUp();
 
         // exchange.yul
-        yulDeployer.deployContract("exchange");
-        
+        // address demo = yulDeployer.deployContract("exchange");
+
         factory = address(new YulFactory());
 
         // var to avoid verbosity
@@ -32,8 +30,16 @@ contract YulswapTest is BaseClonesTest {
 
         vm.label(factory, "Factory");
 
-        
         exchange_address = _f.createExchange(address(token));
         token.approve(exchange_address, type(uint256).max);
+    }
+
+    function testExchangeMetadata() public override {
+        // LP metadata
+        IExchange _exchange = IExchange(exchange_address);
+
+        assertEq(_exchange.name(), "Yulswap V1");
+        assertEq(_exchange.symbol(), "YUL-V1");
+        assertEq(_exchange.decimals(), 18);
     }
 }

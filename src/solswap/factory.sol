@@ -21,7 +21,7 @@ contract SolFactory {
         exchange = payable(_tokenToExchange[token]);
         if (exchange == address(0)) {
             exchange = payable(address(new SolExchange(token)));
-            
+
             unchecked {
                 // overflow is virtually impossible, inline increment and assignation for gas saving
                 _idToToken[++tokenCount] = token;

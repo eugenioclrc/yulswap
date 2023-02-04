@@ -10,7 +10,7 @@ contract SolswapClonesTest is BaseClonesTest {
     function setUp() public override {
         super.setUp();
 
-        factory = address(new SolFactory());
+        factory = address(new SolFactoryClones());
 
         // var to avoid verbosity
         _f = IUniswapFactory(factory);

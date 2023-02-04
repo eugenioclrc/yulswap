@@ -35,7 +35,7 @@ contract SolExchange is ERC20, ReentrancyGuard {
     error ErrTokensOutpur(uint256 min_tokens);
     error ErrEthOutput(uint256 min_eth);
 
-    receive() payable external {}
+    receive() external payable {}
 
     constructor(address token) ERC20("Uniswap V1", "UNI-V1", 18) {
         factoryAddress = msg.sender;
@@ -134,7 +134,11 @@ contract SolExchange is ERC20, ReentrancyGuard {
     }
 
     // Trade ETH to ERC20
-    function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline) external payable returns (uint256 tokens_bought) {
+    function ethToTokenSwapInput(uint256 min_tokens, uint256 deadline)
+        external
+        payable
+        returns (uint256 tokens_bought)
+    {
         return ethToTokenSwapInput(min_tokens, deadline, msg.sender);
     }
 
@@ -167,7 +171,10 @@ contract SolExchange is ERC20, ReentrancyGuard {
 
     // Trade ERC20 to ETH
 
-    function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline) external returns (uint256 tokens_bought) {
+    function tokenToEthSwapInput(uint256 tokens_sold, uint256 min_eth, uint256 deadline)
+        external
+        returns (uint256 tokens_bought)
+    {
         return tokenToEthSwapInput(tokens_sold, min_eth, deadline, msg.sender);
     }
 
@@ -226,8 +233,7 @@ contract SolExchange is ERC20, ReentrancyGuard {
         if (min_eth_bought == 0) {
             revert ErrZero();
         }
-        
-        
+
         require(exchange_addr != self && exchange_addr != address(0));
 
         uint256 token_reserve = ERC20(tokenAddress).balanceOf(self);
@@ -236,8 +242,9 @@ contract SolExchange is ERC20, ReentrancyGuard {
 
         SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, self, tokens_sold);
 
-        tokens_bought = IExchange(exchange_addr).ethToTokenSwapInput{value: eth_bought}(min_tokens_bought, deadline, msg.sender);
-    
+        tokens_bought =
+            IExchange(exchange_addr).ethToTokenSwapInput{value: eth_bought}(min_tokens_bought, deadline, msg.sender);
+
         emit EthPurchase(msg.sender, msg.sender, tokens_sold, eth_bought);
     }
 
@@ -274,5 +281,4 @@ contract SolExchange is ERC20, ReentrancyGuard {
             return numerator / denominator;
         }
     }
-
 }
