@@ -38,7 +38,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1       |  228017     |  |
 | Solswap     | 2305187     |    |
 | Solswap-clones| 204426     |  |
-| Yulswap     |   199909    |                  |
+| Yulswap     |   154810    |                  |
 
 
 ### Add liquidity
@@ -48,7 +48,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1         |  99733     |                |
 | Solswap       | 95695      |                |
 | Solswap-clones| 100465      |                |
-| Yulswap       |   98429     |                |
+| Yulswap       |   98432     |                |
 
 
 ### Remove liquidity
@@ -59,7 +59,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1         |  18624     |   |
 | Solswap       | 19813     |    |
 | Solswap-clones| 20098     |  |
-| Yulswap       |   19782    |                |
+| Yulswap       |   19779    |                |
 
 
 
@@ -71,7 +71,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1       |  17532     |         |
 | Solswap     |  17855     |         |
 | Solswap-clones| 18173     |        |
-| Yulswap       |   17854    |                |
+| Yulswap       |   17769    |                |
 
 
 ### Swap ETH to token
@@ -81,7 +81,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1         |  16871     |         |
 | Solswap       |  17266     |         |
 | Solswap-clones|  17536     |        |
-| Yulswap       |   17171    |                |
+| Yulswap       |   17129    |                |
 
 ### Swap token to token
 
@@ -90,7 +90,7 @@ For optimize it i will use foundry and a base template, so i will run the same t
 | UniV1       |  28759     |         |
 | Solswap     |  26482     |         |
 | Solswap-clones| 27016     |        |
-| Yulswap       |   26315    |                |
+| Yulswap       |   26253    |                |
 
 
 ### TLDR;
@@ -102,13 +102,13 @@ Lets make a gas budget, lets imagine 1 create pair, 5 add liquidity, 5 remove li
 | UniV1         |     1451422 |  ---           |
 | Solswap       |     3498757 |   +2047335     |
 | Solswap-clones|     1434491 |   -  16931     |
-| Yulswap       |     1404364 | **-  47058**   |
+| Yulswap       |     1357375 | **-  94047**   |
 
 
 - UniV1:            1451422 gas units
 - Solswap:          3498757 gas units
 - Solswap-clones:   1434491 gas units
-- [Yulswap](https://github.com/eugenioclrc/yulswap/commit/b098e97940a0cdad3c6b578cbbe973bb05174c13):          1404364 gas units (last update commit `b098e97940`) [optimization writeup](/YULSWAP.md)
+- [Yulswap](https://github.com/eugenioclrc/yulswap/commit/a000176d1a029cd5a6ad73ab09d96b7b150fb96f):          1357375 gas units (last update commit `a000176d1a`) [optimization writeup](/YULSWAP.md)
 
 
 So far not impressive but what an average gas budget based on a posible escenario we got some gas savings vs the original version.

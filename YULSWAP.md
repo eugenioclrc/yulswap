@@ -197,3 +197,37 @@ Overall gas change: -53015 (-10.715%)
 
 New snap
 `forge snapshot --match-contract YulswapTest --snap yul7-base`
+
+### Add constant to name and string in a custom ERC20
+
+```
+forge snapshot --match-contract YulswapTest --diff yul7-base
+Running 10 tests for test/base.YulswapV1.t.sol:YulswapTest
+[PASS] testAddLiquidity() (gas: 150459)
+[PASS] testCreateExchange() (gas: 185039)
+[PASS] testExchangeMetadata() (gas: 12764)
+[PASS] testProxyHack() (gas: 169652)
+[PASS] testRemoveLiquidity() (gas: 100055)
+[PASS] testSwapEthToken() (gas: 144231)
+[PASS] testSwapMultipleTimes() (gas: 6570566)
+[PASS] testSwapTokenEth() (gas: 138287)
+[PASS] testSwapTokenToToken() (gas: 401328)
+[PASS] testSwapTokenToTokenMultipleTimes() (gas: 7930279)
+Test result: ok. 10 passed; 0 failed; finished in 14.84ms
+testRemoveLiquidity() (gas: 0 (0.000%)) 
+testSwapMultipleTimes() (gas: 2 (0.000%)) 
+testAddLiquidity() (gas: 3 (0.002%)) 
+testSwapEthToken() (gas: 3 (0.002%)) 
+testSwapTokenEth() (gas: 3 (0.002%)) 
+testSwapTokenToTokenMultipleTimes() (gas: -36074 (-0.453%)) 
+testSwapTokenToToken() (gas: -45093 (-10.101%)) 
+testCreateExchange() (gas: -45099 (-19.597%)) 
+testProxyHack() (gas: -45099 (-21.001%)) 
+testExchangeMetadata() (gas: -5384 (-29.667%)) 
+Overall gas change: -176738 (-1.106%)
+```
+
+** losts on savings while creating a new exchange **
+
+New snap
+`forge snapshot --match-contract YulswapTest --snap yul8-base`
