@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-import {ERC20} from "solmate/tokens/ERC20.sol";
+import {ERC20} from "./yulERC20.sol";
 
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {Clone} from "solady/utils/Clone.sol";
@@ -51,7 +51,8 @@ contract YulExchange is ERC20, Clone {
 
     receive() external payable {}
 
-    constructor() ERC20("Clone Iplementation", "IMPL-V1", 18) {
+   
+    constructor() ERC20() {
         factoryAddress = msg.sender;
     }
 
@@ -61,8 +62,6 @@ contract YulExchange is ERC20, Clone {
         // unlock the reentrancy lock
         locked = 1;
 
-        name = "Yulswap V1";
-        symbol = "YUL-V1";
     }
 
     // Provide Liquidity
