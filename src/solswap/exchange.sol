@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.19;
 
 import {ERC20} from "solmate/tokens/ERC20.sol";
-
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 
 import {IExchange} from "src/interfaces/ExpectedInterfaceExchange.sol";
@@ -14,9 +13,6 @@ contract SolExchange is ERC20, ReentrancyGuard {
     address public immutable tokenAddress;
     // Address of Solswap Factory
     address public immutable factoryAddress;
-
-    // to track implementation
-    address private immutable self;
 
     // events
     // drop the indexed keyword on eth_sold and tokens_bought to save gas
@@ -39,7 +35,6 @@ contract SolExchange is ERC20, ReentrancyGuard {
 
     constructor(address token) ERC20("Uniswap V1", "UNI-V1", 18) {
         factoryAddress = msg.sender;
-        self = address(this);
         tokenAddress = token;
     }
 
@@ -70,9 +65,9 @@ contract SolExchange is ERC20, ReentrancyGuard {
                 revert ErrZero();
             }
 
-            uint256 eth_reserve = self.balance - msg.value;
+            uint256 eth_reserve = address(this).balance - msg.value;
 
-            uint256 token_reserve = ERC20(tokenAddress).balanceOf(self);
+            uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
             unchecked {
                 token_amount = msg.value * token_reserve / eth_reserve + 1;
                 liquidity_minted = msg.value * total_liquidity / eth_reserve;
@@ -89,7 +84,7 @@ contract SolExchange is ERC20, ReentrancyGuard {
         }
 
         _mint(msg.sender, liquidity_minted);
-        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, self, token_amount);
+        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), token_amount);
 
         emit AddLiquidity(msg.sender, msg.value, token_amount);
     }
@@ -116,9 +111,9 @@ contract SolExchange is ERC20, ReentrancyGuard {
         if (total_liquidity == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(self);
+        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
         unchecked {
-            eth_amount = amount * self.balance / total_liquidity;
+            eth_amount = amount * address(this).balance / total_liquidity;
             token_amount = amount * token_reserve / total_liquidity;
         }
         if (eth_amount < min_eth) {
@@ -158,8 +153,8 @@ contract SolExchange is ERC20, ReentrancyGuard {
             revert ErrZero();
         }
 
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(self);
-        tokens_bought = getInputPrice(msg.value, self.balance - msg.value, token_reserve);
+        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        tokens_bought = getInputPrice(msg.value, address(this).balance - msg.value, token_reserve);
         if (tokens_bought < min_tokens) {
             revert ErrTokensOutpur(min_tokens);
         }
@@ -194,13 +189,13 @@ contract SolExchange is ERC20, ReentrancyGuard {
             revert ErrZero();
         }
 
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(self);
+        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
 
-        eth_bought = getInputPrice(tokens_sold, token_reserve, self.balance);
+        eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
         if (eth_bought < min_eth) {
             revert ErrEthOutput(min_eth);
         }
-        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, self, tokens_sold);
+        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), tokens_sold);
         SafeTransferLib.safeTransferETH(recipient, eth_bought);
 
         emit EthPurchase(msg.sender, recipient, tokens_sold, eth_bought);
@@ -234,13 +229,13 @@ contract SolExchange is ERC20, ReentrancyGuard {
             revert ErrZero();
         }
 
-        require(exchange_addr != self && exchange_addr != address(0));
+        require(exchange_addr != address(this) && exchange_addr != address(0));
 
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(self);
-        uint256 eth_bought = getInputPrice(tokens_sold, token_reserve, self.balance);
+        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        uint256 eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
         require(eth_bought >= min_eth_bought, "eth less than expextec");
 
-        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, self, tokens_sold);
+        SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), tokens_sold);
 
         tokens_bought =
             IExchange(exchange_addr).ethToTokenSwapInput{value: eth_bought}(min_tokens_bought, deadline, msg.sender);
@@ -253,20 +248,21 @@ contract SolExchange is ERC20, ReentrancyGuard {
         if (eth_sold == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(self);
+        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
 
         if (token_reserve == 0) {
             revert ErrZero();
         }
-        return getInputPrice(eth_sold, self.balance, token_reserve);
+
+        return getInputPrice(eth_sold, address(this).balance, token_reserve);
     }
 
     function getTokenToEthInputPrice(uint256 tokens_sold) external view returns (uint256 eth_bought) {
         if (tokens_sold == 0) {
             revert ErrZero();
         }
-        uint256 token_reserve = ERC20(tokenAddress).balanceOf(self);
-        return getInputPrice(tokens_sold, token_reserve, self.balance);
+        uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
+        return getInputPrice(tokens_sold, token_reserve, address(this).balance);
     }
 
     function getInputPrice(uint256 input_amount, uint256 input_reserve, uint256 output_reserve)
