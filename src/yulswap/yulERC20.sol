@@ -23,7 +23,6 @@ abstract contract ERC20 {
     string public constant symbol = "YUL-V1";
 
     uint8 public immutable decimals = 18;
-     
 
     /*//////////////////////////////////////////////////////////////
                               ERC20 STORAGE
@@ -49,10 +48,7 @@ abstract contract ERC20 {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(
-        
-    ) {
-        
+    constructor() {
         INITIAL_CHAIN_ID = block.chainid;
         INITIAL_DOMAIN_SEPARATOR = computeDomainSeparator();
     }
@@ -83,11 +79,7 @@ abstract contract ERC20 {
         return true;
     }
 
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) public virtual returns (bool) {
+    function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {
         uint256 allowed = allowance[from][msg.sender]; // Saves gas for limited approvals.
 
         if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
@@ -109,15 +101,10 @@ abstract contract ERC20 {
                              EIP-2612 LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function permit(
-        address owner,
-        address spender,
-        uint256 value,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public virtual {
+    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+        public
+        virtual
+    {
         require(deadline >= block.timestamp, "PERMIT_DEADLINE_EXPIRED");
 
         // Unchecked because the only math done is incrementing
@@ -160,16 +147,15 @@ abstract contract ERC20 {
     }
 
     function computeDomainSeparator() internal view virtual returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                    keccak256(bytes(name)),
-                    keccak256("1"),
-                    block.chainid,
-                    address(this)
-                )
-            );
+        return keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes(name)),
+                keccak256("1"),
+                block.chainid,
+                address(this)
+            )
+        );
     }
 
     /*//////////////////////////////////////////////////////////////
