@@ -1,56 +1,43 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.19;
 
 import {YulExchange} from "./exchange.sol";
 import {LibClone} from "solady/utils/LibClone.sol";
 
 contract YulFactory {
     // from https://github.com/Saw-mon-and-Natalie/clones-with-immutable-args/blob/main/src/ExampleCloneFactory.sol
-    using LibClone for address;
-
     uint256 public tokenCount;
-    mapping(address => address payable) private _tokenToExchange;
-    mapping(address => address) private _exchangeToToken;
-    mapping(uint256 => address) private _idToToken;
+    mapping(address token => address payable exchange) public getExchange;
+    mapping(address exchange => address token) public getToken;
+    mapping(uint256 tokenId => address token) public getTokenWithId;
 
     address private immutable _exchangeImplementation;
 
     event NewExchange(address indexed token, address indexed exchange);
+    error errTokenNotContract();
 
     constructor() {
         _exchangeImplementation = address(new YulExchange());
     }
 
     function createExchange(address token) external returns (address payable exchange) {
-        exchange = payable(_tokenToExchange[token]);
+        exchange = payable(getExchange[token]);
         if (exchange == address(0)) {
             // add check to ensure new tokens are contracts
-            require(token.code.length > 0, "token not a contract");
+            if (token.code.length == 0) {
+                revert errTokenNotContract();
+            }
 
-            exchange = payable(_exchangeImplementation.clone(abi.encodePacked(address(token))));
+            exchange = payable(LibClone.clone(_exchangeImplementation, abi.encodePacked(address(token))));
             YulExchange(exchange).initialize();
 
             unchecked {
                 // overflow is virtually impossible, inline increment and assignation for gas saving
-                _idToToken[++tokenCount] = token;
+                getTokenWithId[++tokenCount] = token;
             }
 
-            _tokenToExchange[token] = exchange;
-            _exchangeToToken[exchange] = token;
+            getExchange[token] = exchange;
             emit NewExchange(token, exchange);
         }
-    }
-
-    // Get Exchange and Token Info
-    function getExchange(address token) external view returns (address payable exchange) {
-        return _tokenToExchange[token];
-    }
-
-    function getToken(address exchange) external view returns (address token) {
-        return _exchangeToToken[exchange];
-    }
-
-    function getTokenWithId(uint256 tokenId) external view returns (address token) {
-        return _idToToken[tokenId];
     }
 }
