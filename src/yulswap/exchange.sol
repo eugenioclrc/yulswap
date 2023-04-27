@@ -42,19 +42,8 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
     error ErrSameToken();
     error ErrLessEthThanExpected();
 
-    receive() external payable {}
-
     constructor() ERC20() {
         factoryAddress = msg.sender;
-    }
-
-    function initialize() external {
-        if(msg.sender != factoryAddress) {
-            revert ErrOnlyFactory();
-        }
-        
-        // unlock the reentrancy lock
-        _unlockReentrancy();
     }
 
     // Provide Liquidity
@@ -64,17 +53,9 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         nonReentrant
         returns (uint256 liquidity_minted)
     {
-        if (deadline <= block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
-
-        if (max_tokens == 0) {
-            revert ErrZero();
-        }
-
-        if (msg.value == 0) {
-            revert ErrZero();
-        }
+        if (deadline <= block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (max_tokens == 0) revert ErrZero();
+        if (msg.value == 0) revert ErrZero();
 
         uint256 total_liquidity = totalSupply;
 
@@ -83,9 +64,7 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         address _tokenAddress = _getArgAddress(0);
 
         if (total_liquidity > 0) {
-            if (min_liquidity == 0) {
-                revert ErrZero();
-            }
+            if (min_liquidity == 0) revert ErrZero();
 
             uint256 eth_reserve;
 
@@ -96,12 +75,8 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
                 token_amount := add(div(mul(callvalue(), token_reserve), eth_reserve), 1)
                 liquidity_minted := div(mul(callvalue(), total_liquidity), eth_reserve)
             }
-            if (max_tokens < token_amount) {
-                revert ErrMaxTokens(max_tokens);
-            }
-            if (liquidity_minted < min_liquidity) {
-                revert ErrMinLiquidity(min_liquidity);
-            }
+            if (max_tokens < token_amount) revert ErrMaxTokens(max_tokens);
+            if (liquidity_minted < min_liquidity) revert ErrMinLiquidity(min_liquidity);
         } else {
             token_amount = max_tokens;
             liquidity_minted = msg.value;
@@ -118,35 +93,24 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         nonReentrant
         returns (uint256 eth_amount, uint256 token_amount)
     {
-        if (amount == 0) {
-            revert ErrZero();
-        }
-        if (deadline <= block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
-        if (min_eth == 0) {
-            revert ErrZero();
-        }
-        if (min_tokens == 0) {
-            revert ErrZero();
-        }
+        if (amount == 0) revert ErrZero();
+        if (deadline <= block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (min_eth == 0) revert ErrZero();
+        if (min_tokens == 0) revert ErrZero();
 
         uint256 total_liquidity = totalSupply;
-        if (total_liquidity == 0) {
-            revert ErrZero();
-        }
+        if (total_liquidity == 0) revert ErrZero();
+
         address _tokenAddress = _getArgAddress(0);
         uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         assembly {
             eth_amount := div(mul(amount, selfbalance()), total_liquidity)
             token_amount := div(mul(amount, token_reserve), total_liquidity)
         }
-        if (eth_amount < min_eth) {
-            revert ErrBurnEthAmount(eth_amount);
-        }
-        if (token_amount < min_tokens) {
-            revert ErrBurnTokenAmount(token_amount);
-        }
+
+        if (eth_amount < min_eth) revert ErrBurnEthAmount(eth_amount);
+        if (token_amount < min_tokens) revert ErrBurnTokenAmount(token_amount);
+
         _burn(msg.sender, amount);
         SafeTransferLib.safeTransfer(_tokenAddress, msg.sender, token_amount);
         SafeTransferLib.safeTransferETH(msg.sender, eth_amount);
@@ -168,16 +132,10 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         nonReentrant
         returns (uint256 tokens_bought)
     {
-        if (deadline < block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
-        if (msg.value == 0) {
-            revert ErrZero();
-        }
-        if (min_tokens == 0) {
-            revert ErrZero();
-        }
-
+        if (deadline < block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (msg.value == 0) revert ErrZero();
+        if (min_tokens == 0) revert ErrZero();
+        
         address _tokenAddress = _getArgAddress(0);
         uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
         uint256 prevEthBalance;
@@ -185,9 +143,7 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
             prevEthBalance := sub(selfbalance(), callvalue())
         }
         tokens_bought = getInputPrice(msg.value, prevEthBalance, token_reserve);
-        if (tokens_bought < min_tokens) {
-            revert ErrTokensOutpur(min_tokens);
-        }
+        if (tokens_bought < min_tokens) revert ErrTokensOutpur(min_tokens);
 
         SafeTransferLib.safeTransfer(_tokenAddress, recipient, tokens_bought);
 
@@ -208,16 +164,9 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         nonReentrant
         returns (uint256 eth_bought)
     {
-        if (deadline <= block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
-
-        if (tokens_sold == 0) {
-            revert ErrZero();
-        }
-        if (min_eth == 0) {
-            revert ErrZero();
-        }
+        if (deadline <= block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (tokens_sold == 0) revert ErrZero();
+        if (min_eth == 0) revert ErrZero();
 
         address _tokenAddress = _getArgAddress(0);
         uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
@@ -226,10 +175,10 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         assembly {
             _balance := selfbalance()
         }
+
         eth_bought = getInputPrice(tokens_sold, token_reserve, _balance);
-        if (eth_bought < min_eth) {
-            revert ErrEthOutput(min_eth);
-        }
+        if (eth_bought < min_eth) revert ErrEthOutput(min_eth);
+
         SafeTransferLib.safeTransferFrom(_tokenAddress, msg.sender, address(this), tokens_sold);
         SafeTransferLib.safeTransferETH(recipient, eth_bought);
 
@@ -249,32 +198,16 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         uint256 deadline,
         address token_addr
     ) external nonReentrant returns (uint256 tokens_bought) {
-        if (deadline < block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
+        if (deadline < block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (tokens_sold == 0) revert ErrZero();
+        if (min_tokens_bought == 0) revert ErrZero();
+        if (min_eth_bought == 0) revert ErrZero();
+        
+        address exchange_addr = YulFactory(factoryAddress).getExchange(token_addr);
 
-        if (tokens_sold == 0) {
-            revert ErrZero();
-        }
-        if (min_tokens_bought == 0) {
-            revert ErrZero();
-        }
-        if (min_eth_bought == 0) {
-            revert ErrZero();
-        }
-
-        address payable exchange_addr = YulFactory(factoryAddress).getExchange(token_addr);
-
-        if(exchange_addr == address(this)) {
-            revert ErrSameToken();
-        }
-
-        assembly {
-            if iszero(exchange_addr) {
-                mstore(0x00, "zero address")
-                revert(0x00, 0x20)
-            }
-        }
+        if (exchange_addr == address(this)) revert ErrSameToken();
+        if (exchange_addr == address(0)) revert ErrZero();
+        
         address _tokenAddress = _getArgAddress(0);
         uint256 token_reserve = tokenBalanceOf(_tokenAddress, address(this));
 
@@ -284,9 +217,7 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         }
 
         uint256 eth_bought = getInputPrice(tokens_sold, token_reserve, _balance);
-        if (eth_bought < min_eth_bought) {
-            revert ErrLessEthThanExpected();
-        }
+        if (eth_bought < min_eth_bought) revert ErrLessEthThanExpected();
 
         SafeTransferLib.safeTransferFrom(_tokenAddress, msg.sender, address(this), tokens_sold);
 
@@ -307,9 +238,8 @@ contract YulExchange is ERC20, Clone, ReentrancyGuard {
         }
         uint256 token_reserve = tokenBalanceOf(_getArgAddress(0), address(this));
 
-        if (token_reserve == 0) {
-            revert ErrZero();
-        }
+        if (token_reserve == 0) revert ErrZero();
+
         uint256 _balance;
         assembly {
             _balance := selfbalance()

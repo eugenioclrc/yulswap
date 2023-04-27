@@ -7,7 +7,7 @@ import {LibClone} from "solady/utils/LibClone.sol";
 contract YulFactory {
     // from https://github.com/Saw-mon-and-Natalie/clones-with-immutable-args/blob/main/src/ExampleCloneFactory.sol
     uint256 public tokenCount;
-    mapping(address token => address payable exchange) public getExchange;
+    mapping(address token => address exchange) public getExchange;
     mapping(address exchange => address token) public getToken;
     mapping(uint256 tokenId => address token) public getTokenWithId;
 
@@ -20,17 +20,14 @@ contract YulFactory {
         _exchangeImplementation = address(new YulExchange());
     }
 
-    function createExchange(address token) external returns (address payable exchange) {
-        exchange = payable(getExchange[token]);
+    function createExchange(address token) external returns (address exchange) {
+        exchange = getExchange[token];
         if (exchange == address(0)) {
             // add check to ensure new tokens are contracts
-            if (token.code.length == 0) {
-                revert errTokenNotContract();
-            }
+            if (token.code.length == 0) revert errTokenNotContract();
 
-            exchange = payable(LibClone.clone(_exchangeImplementation, abi.encodePacked(address(token))));
-            YulExchange(exchange).initialize();
-
+            exchange = LibClone.clone(_exchangeImplementation, abi.encodePacked(address(token)));
+            
             unchecked {
                 // overflow is virtually impossible, inline increment and assignation for gas saving
                 getTokenWithId[++tokenCount] = token;

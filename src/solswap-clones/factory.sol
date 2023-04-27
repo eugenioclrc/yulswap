@@ -6,7 +6,7 @@ import {Clones} from "@openzeppelin/proxy/Clones.sol";
 
 contract SolFactoryClones {
     uint256 public tokenCount;
-    mapping(address token => address payable exchange) public getExchange;
+    mapping(address token => address exchange) public getExchange;
     mapping(address exchange => address token) public getToken;
     mapping(uint256 tokenId => address token) public getTokenWithId;
 
@@ -19,13 +19,12 @@ contract SolFactoryClones {
         _exchangeImplementation = address(new SolExchange());
     }
 
-    function createExchange(address token) external returns (address payable exchange) {
-        exchange = payable(getExchange[token]);
+    function createExchange(address token) external returns (address exchange) {
+        exchange = getExchange[token];
         if (exchange == address(0)) {
-            if (token.code.length == 0) {
-                revert errTokenNotContract();
-            }
-            exchange = payable(Clones.clone(address(_exchangeImplementation)));
+            if (token.code.length == 0) revert errTokenNotContract();
+
+            exchange = Clones.clone(address(_exchangeImplementation));
             SolExchange(exchange).initialize(token);
 
             unchecked {

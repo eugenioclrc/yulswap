@@ -31,8 +31,6 @@ contract SolExchange is ERC20, ReentrancyGuard {
     error ErrTokensOutpur(uint256 min_tokens);
     error ErrEthOutput(uint256 min_eth);
 
-    receive() external payable {}
-
     constructor(address token) ERC20("Uniswap V1", "UNI-V1", 18) {
         factoryAddress = msg.sender;
         tokenAddress = token;
@@ -45,25 +43,15 @@ contract SolExchange is ERC20, ReentrancyGuard {
         nonReentrant
         returns (uint256 liquidity_minted)
     {
-        if (deadline <= block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
-
-        if (max_tokens == 0) {
-            revert ErrZero();
-        }
-
-        if (msg.value == 0) {
-            revert ErrZero();
-        }
+        if (deadline <= block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (max_tokens == 0) revert ErrZero();
+        if (msg.value == 0) revert ErrZero();
 
         uint256 total_liquidity = totalSupply;
 
         uint256 token_amount;
         if (total_liquidity > 0) {
-            if (min_liquidity == 0) {
-                revert ErrZero();
-            }
+            if (min_liquidity == 0) revert ErrZero();
 
             uint256 eth_reserve = address(this).balance - msg.value;
 
@@ -72,12 +60,10 @@ contract SolExchange is ERC20, ReentrancyGuard {
                 token_amount = msg.value * token_reserve / eth_reserve + 1;
                 liquidity_minted = msg.value * total_liquidity / eth_reserve;
             }
-            if (max_tokens < token_amount) {
-                revert ErrMaxTokens(max_tokens);
-            }
-            if (liquidity_minted < min_liquidity) {
-                revert ErrMinLiquidity(min_liquidity);
-            }
+
+            if (max_tokens < token_amount) revert ErrMaxTokens(max_tokens);
+            if (liquidity_minted < min_liquidity) revert ErrMinLiquidity(min_liquidity);
+
         } else {
             token_amount = max_tokens;
             liquidity_minted = msg.value;
@@ -94,34 +80,23 @@ contract SolExchange is ERC20, ReentrancyGuard {
         nonReentrant
         returns (uint256 eth_amount, uint256 token_amount)
     {
-        if (amount == 0) {
-            revert ErrZero();
-        }
-        if (deadline <= block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
-        if (min_eth == 0) {
-            revert ErrZero();
-        }
-        if (min_tokens == 0) {
-            revert ErrZero();
-        }
+        if (amount == 0) revert ErrZero();
+        if (deadline <= block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (min_eth == 0) revert ErrZero();
+        if (min_tokens == 0) revert ErrZero();
 
         uint256 total_liquidity = totalSupply;
-        if (total_liquidity == 0) {
-            revert ErrZero();
-        }
+        if (total_liquidity == 0) revert ErrZero();
+        
         uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
         unchecked {
             eth_amount = amount * address(this).balance / total_liquidity;
             token_amount = amount * token_reserve / total_liquidity;
         }
-        if (eth_amount < min_eth) {
-            revert ErrBurnEthAmount(eth_amount);
-        }
-        if (token_amount < min_tokens) {
-            revert ErrBurnTokenAmount(token_amount);
-        }
+        
+        if (eth_amount < min_eth) revert ErrBurnEthAmount(eth_amount);
+        if (token_amount < min_tokens) revert ErrBurnTokenAmount(token_amount);
+
         _burn(msg.sender, amount);
         SafeTransferLib.safeTransfer(tokenAddress, msg.sender, token_amount);
         SafeTransferLib.safeTransferETH(msg.sender, eth_amount);
@@ -143,21 +118,13 @@ contract SolExchange is ERC20, ReentrancyGuard {
         nonReentrant
         returns (uint256 tokens_bought)
     {
-        if (deadline < block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
-        if (msg.value == 0) {
-            revert ErrZero();
-        }
-        if (min_tokens == 0) {
-            revert ErrZero();
-        }
+        if (deadline < block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (msg.value == 0) revert ErrZero();
+        if (min_tokens == 0) revert ErrZero();
 
         uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
         tokens_bought = getInputPrice(msg.value, address(this).balance - msg.value, token_reserve);
-        if (tokens_bought < min_tokens) {
-            revert ErrTokensOutpur(min_tokens);
-        }
+        if (tokens_bought < min_tokens) revert ErrTokensOutpur(min_tokens);
 
         SafeTransferLib.safeTransfer(tokenAddress, recipient, tokens_bought);
 
@@ -178,23 +145,16 @@ contract SolExchange is ERC20, ReentrancyGuard {
         nonReentrant
         returns (uint256 eth_bought)
     {
-        if (deadline <= block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
-
-        if (tokens_sold == 0) {
-            revert ErrZero();
-        }
-        if (min_eth == 0) {
-            revert ErrZero();
-        }
+        if (deadline <= block.timestamp) revert ErrDeadlineExpired(deadline);
+        if (tokens_sold == 0) revert ErrZero();
+        if (min_eth == 0) revert ErrZero();
 
         uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
 
         eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
-        if (eth_bought < min_eth) {
-            revert ErrEthOutput(min_eth);
-        }
+
+        if (eth_bought < min_eth) revert ErrEthOutput(min_eth);
+
         SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), tokens_sold);
         SafeTransferLib.safeTransferETH(recipient, eth_bought);
 
@@ -214,26 +174,18 @@ contract SolExchange is ERC20, ReentrancyGuard {
         uint256 deadline,
         address token_addr
     ) external nonReentrant returns (uint256 tokens_bought) {
-        address payable exchange_addr = SolFactory(factoryAddress).getExchange(token_addr);
-        if (deadline <= block.timestamp) {
-            revert ErrDeadlineExpired(deadline);
-        }
+        address exchange_addr = SolFactory(factoryAddress).getExchange(token_addr);
+        if (deadline <= block.timestamp) revert ErrDeadlineExpired(deadline);
 
-        if (tokens_sold == 0) {
-            revert ErrZero();
-        }
-        if (min_tokens_bought == 0) {
-            revert ErrZero();
-        }
-        if (min_eth_bought == 0) {
-            revert ErrZero();
-        }
+        if (tokens_sold == 0) revert ErrZero();
+        if (min_tokens_bought == 0) revert ErrZero();
+        if (min_eth_bought == 0) revert ErrZero();
 
-        require(exchange_addr != address(this) && exchange_addr != address(0));
+        require(exchange_addr != address(this) && exchange_addr != address(0), "invalid exchange");
 
         uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
         uint256 eth_bought = getInputPrice(tokens_sold, token_reserve, address(this).balance);
-        require(eth_bought >= min_eth_bought, "eth less than expextec");
+        require(eth_bought >= min_eth_bought, "eth less than expected");
 
         SafeTransferLib.safeTransferFrom(tokenAddress, msg.sender, address(this), tokens_sold);
 
@@ -245,22 +197,18 @@ contract SolExchange is ERC20, ReentrancyGuard {
 
     // Get Prices
     function getEthToTokenInputPrice(uint256 eth_sold) external view returns (uint256 tokens_bought) {
-        if (eth_sold == 0) {
-            revert ErrZero();
-        }
+        if (eth_sold == 0) revert ErrZero();
+
         uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
 
-        if (token_reserve == 0) {
-            revert ErrZero();
-        }
+        if (token_reserve == 0) revert ErrZero();
 
         return getInputPrice(eth_sold, address(this).balance, token_reserve);
     }
 
     function getTokenToEthInputPrice(uint256 tokens_sold) external view returns (uint256 eth_bought) {
-        if (tokens_sold == 0) {
-            revert ErrZero();
-        }
+        if (tokens_sold == 0) revert ErrZero();
+
         uint256 token_reserve = ERC20(tokenAddress).balanceOf(address(this));
         return getInputPrice(tokens_sold, token_reserve, address(this).balance);
     }

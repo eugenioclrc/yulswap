@@ -8,7 +8,7 @@ contract ReentrancyGuard {
     uint256 private locked = 2;
 
     modifier nonReentrant() virtual {
-        if (locked != 1) {
+        if (locked == 2) {
             revert errNonReentrant();
         }
 
